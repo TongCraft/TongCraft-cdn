@@ -763,13 +763,17 @@ function updateMascotLook(group, camera, canvas, pointer, look, headPosition) {
   look.y = clamp((pointer.y - centerY) / Math.max(box.height / 2, 1), -1, 1);
 }
 
+const MASCOT_MAX_HEAD_YAW = 0.28;
+const MASCOT_MAX_HEAD_PITCH = 0.16;
+
 function applyMascotLook(group, look) {
   const head = group.getObjectByName('head');
   const body = group.getObjectByName('body');
   if (!head || !body) return;
-  head.rotation.y += look.x * 0.28;
-  head.rotation.x += look.y * 0.16;
-  body.rotation.y += look.x * 0.035;
+  const facing = Math.max(0, Math.cos(group.rotation.y));
+  head.rotation.y += clamp(look.x * MASCOT_MAX_HEAD_YAW, -MASCOT_MAX_HEAD_YAW, MASCOT_MAX_HEAD_YAW) * facing;
+  head.rotation.x += clamp(look.y * MASCOT_MAX_HEAD_PITCH, -MASCOT_MAX_HEAD_PITCH, MASCOT_MAX_HEAD_PITCH) * facing;
+  body.rotation.y += look.x * 0.035 * facing;
 }
 
 function buildPlayer(group, img, model, uuid, options = {}) {
@@ -1156,7 +1160,7 @@ function defaultMascotState() {
     height: window.innerWidth < 780 ? 330 : 426,
     uuid: players[0]?.uuid || '',
     animation: 'idle',
-    yaw: -0.22,
+    yaw: 0,
     hidden: false
   };
 }
@@ -1165,6 +1169,7 @@ function readMascotState() {
   const fallback = defaultMascotState();
   try {
     const saved = JSON.parse(localStorage.getItem(MASCOT_STORE) || '{}');
+    const savedYaw = Number(saved.yaw);
     return {
       ...fallback,
       ...saved,
@@ -1174,7 +1179,7 @@ function readMascotState() {
       height: clamp(Number(saved.height ?? fallback.height), 330, 630),
       uuid: players.some(player => player.uuid === saved.uuid) ? saved.uuid : fallback.uuid,
       animation: ANIMATIONS.some(([value]) => value === saved.animation) ? saved.animation : fallback.animation,
-      yaw: Number.isFinite(Number(saved.yaw)) ? Number(saved.yaw) : fallback.yaw,
+      yaw: savedYaw === -0.22 ? 0 : Number.isFinite(savedYaw) ? savedYaw : fallback.yaw,
       hidden: Boolean(saved.hidden)
     };
   } catch {
