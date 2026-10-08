@@ -747,6 +747,22 @@ function create3mf(parts, playerName) {
   }, { level: 6 });
 }
 
+function updateMascotLook(group, camera, canvas, pointer, look, headPosition) {
+  const head = group.getObjectByName('head');
+  if (!head || !pointer) {
+    look.x = 0;
+    look.y = 0;
+    return;
+  }
+  camera.updateMatrixWorld();
+  head.getWorldPosition(headPosition).project(camera);
+  const box = canvas.getBoundingClientRect();
+  const centerX = box.left + (headPosition.x + 1) * box.width / 2;
+  const centerY = box.top + (1 - headPosition.y) * box.height / 2;
+  look.x = clamp((pointer.x - centerX) / Math.max(box.width / 2, 1), -1, 1);
+  look.y = clamp((pointer.y - centerY) / Math.max(box.height / 2, 1), -1, 1);
+}
+
 function applyMascotLook(group, look) {
   const head = group.getObjectByName('head');
   const body = group.getObjectByName('body');
@@ -1176,6 +1192,7 @@ function MascotWidget() {
   const actionRef = useRef(state.animation);
   const yawRef = useRef(state.yaw);
   const lookRef = useRef({ x: 0, y: 0 });
+  const pointerRef = useRef(null);
   const dragRef = useRef(null);
   const bubbleTimerRef = useRef(0);
   const lastActivityRef = useRef(Date.now());
@@ -1245,15 +1262,7 @@ function MascotWidget() {
 
   useEffect(() => {
     const onPointerMove = event => {
-      if (!mascotRef.current) return;
-      const box = mascotRef.current.getBoundingClientRect();
-      const cx = box.left + box.width / 2;
-      const cy = box.top + box.height * 0.38;
-      lookRef.current = {
-        x: clamp((event.clientX - cx) / Math.max(220, window.innerWidth * 0.35), -1, 1),
-        y: clamp((event.clientY - cy) / Math.max(180, window.innerHeight * 0.28), -1, 1)
-      };
-      window.__mascotLook = lookRef.current;
+      pointerRef.current = { x: event.clientX, y: event.clientY };
     };
     window.addEventListener('pointermove', onPointerMove);
     return () => window.removeEventListener('pointermove', onPointerMove);
@@ -1350,6 +1359,7 @@ function MascotWidget() {
     window.addEventListener('resize', resize);
 
     const clock = new THREE.Clock();
+    const headPosition = new THREE.Vector3();
     let frame = 0;
     const animate = () => {
       frame = requestAnimationFrame(animate);
@@ -1359,7 +1369,9 @@ function MascotWidget() {
       if (actionRef.current === 'idle') {
         playerGroup.rotation.y += Math.sin(elapsed * 0.7) * 0.12;
       }
+      updateMascotLook(playerGroup, camera, canvas, pointerRef.current, lookRef.current, headPosition);
       applyMascotLook(playerGroup, lookRef.current);
+      window.__mascotLook = lookRef.current;
       renderer.render(scene, camera);
     };
     animate();
