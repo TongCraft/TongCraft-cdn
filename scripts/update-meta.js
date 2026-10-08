@@ -75,27 +75,6 @@ async function generateMeta() {
 }
 
 /**
- * Generate CDN URLs file
- */
-async function generateCdnUrls(meta) {
-  const cdnBase = process.env.CDN_BASE || 'https://tongcraft-cdn.example.com';
-  
-  const urls = {};
-  for (const [uuid, info] of Object.entries(meta)) {
-    urls[uuid] = {
-      name: info.name,
-      url: `${cdnBase}/avatars/${uuid}.png`,
-      thumbUrl: `${cdnBase}/avatars/${uuid}.png?size=32`
-    };
-  }
-  
-  const urlsFile = path.join(DATA_DIR, 'cdn-urls.json');
-  await fs.writeFile(urlsFile, JSON.stringify(urls, null, 2));
-  
-  return urls;
-}
-
-/**
  * Main function
  */
 async function main() {
@@ -108,10 +87,6 @@ async function main() {
   const meta = await generateMeta();
   const avatarCount = Object.keys(meta).length;
   console.log(`Found ${avatarCount} avatar(s) in avatars/`);
-  
-  // Generate CDN URLs
-  const urls = await generateCdnUrls(meta);
-  console.log(`Generated CDN URLs for ${Object.keys(urls).length} avatar(s)`);
   
   // Update players.json with avatar info
   const playersData = await loadPlayers();

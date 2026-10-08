@@ -12,7 +12,6 @@ skins/
 
 # 构建与测试输出
 dist/
-.wrangler/
 playwright-results/
 
 # Claude Code 本地状态
