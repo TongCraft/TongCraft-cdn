@@ -10,7 +10,7 @@ const SKINS_DIR = path.join(__dirname, '..', 'skins');
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const VISIT_COUNTER_NAMESPACE = process.env.VISIT_COUNTER_NAMESPACE || 'weiuou';
 const VISIT_COUNTER_KEY = process.env.VISIT_COUNTER_KEY || 'tongcraft-cdn';
-const VISIT_COUNTER_FALLBACK_BADGE = 'https://hits.sh/github.com/weiuou/TongCraft-cdn.svg?label=&color=111111';
+const VISIT_COUNTER_FALLBACK_BADGE = 'https://hits.sh/github.com/TongCraft/TongCraft-cdn.svg?label=&color=111111';
 const FRIEND_LINKS = [
   { label: '服务器官网', href: 'https://www.tongcraft.cn/' },
   { label: '服务器地图', href: 'https://map.weiuou.art/' },
@@ -172,7 +172,7 @@ body.dark .mascot-bubble{background:rgba(245,245,245,.9);color:#111;border-color
 <header>
   <div class="header-copy"><h1>Tongcraft Heads</h1><p>${players.length} 个玩家头颅 · ${count} 张头像缓存</p><div class="site-meta"><span><strong>本站点击量</strong> <span id="visitCount">--</span></span><span><strong>友链</strong> <span class="friend-links">${friendLinksMarkup}</span></span></div></div>
   <div class="header-actions">
-    <a class="icon-link" href="https://github.com/weiuou/TongCraft-cdn" target="_blank" rel="noreferrer" aria-label="GitHub repository" title="GitHub repository"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.16c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.23-1.27-5.23-5.67 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18A10.95 10.95 0 0 1 12 6.06c.98 0 1.96.13 2.88.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.41-2.69 5.38-5.25 5.66.41.36.78 1.06.78 2.14v3.16c0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg></a>
+    <a class="icon-link" href="https://github.com/TongCraft/TongCraft-cdn" target="_blank" rel="noreferrer" aria-label="GitHub repository" title="GitHub repository"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.16c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.23-1.27-5.23-5.67 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18A10.95 10.95 0 0 1 12 6.06c.98 0 1.96.13 2.88.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.41-2.69 5.38-5.25 5.66.41.36.78 1.06.78 2.14v3.16c0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg></a>
     <button type="button" onclick="toggleMascot()">Mascot</button><button type="button" onclick="toggleTheme()">◐ 主题</button><button type="button" onclick="copyVisibleGive()">⛏ 复制当前指令</button>
   </div>
 </header>

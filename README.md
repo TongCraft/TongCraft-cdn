@@ -168,10 +168,10 @@ Wei_uou, Player2 Player3
 Settings → Pages → Source → GitHub Actions
 ```
 
-部署后页面通常位于：
+当前站点地址：
 
 ```text
-https://你的用户名.github.io/仓库名/
+https://tongcraft.github.io/TongCraft-cdn/
 ```
 
 ## 页面使用说明
