@@ -3,22 +3,36 @@
   "version": "1.0.0",
   "description": "CDN for Tongcraft Minecraft server player avatars",
   "type": "module",
+  "engines": {
+    "node": ">=24.13.0"
+  },
   "scripts": {
     "fetch": "node scripts/fetch-avatars.js",
     "add-player": "node scripts/add-player.js",
     "update-meta": "node scripts/update-meta.js",
-    "build:pages": "cross-env STATIC_EXPORT=1 node src/server.js",
+    "build:pages": "npm run build",
+    "build": "cross-env STATIC_EXPORT=1 node src/server.js",
+    "dev:cloudflare": "wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
+    "check:deploy": "wrangler deploy --dry-run",
+    "check:types": "wrangler types && tsc",
+    "check:network": "node scripts/check-network.js",
+    "test": "node --test",
     "check:3d": "node scripts/check-3d-viewer.js",
     "web": "node src/server.js",
     "web:port": "node src/server.js --port"
   },
   "dependencies": {
     "cross-env": "^7.0.3",
-    "fflate": "^0.8.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "sharp": "^0.35.5",
-    "three": "^0.184.0"
+    "three": "0.160.0"
   },
   "devDependencies": {
-    "playwright": "^1.59.1"
+    "esbuild": "^0.28.2",
+    "playwright": "^1.59.1",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.156.1"
   }
 }

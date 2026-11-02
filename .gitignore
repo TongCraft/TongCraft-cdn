@@ -13,6 +13,9 @@ skins/
 # 构建与测试输出
 dist/
 playwright-results/
+.wrangler/
+.dev.vars*
+worker-configuration.d.ts
 
 # Claude Code 本地状态
 .claude/
