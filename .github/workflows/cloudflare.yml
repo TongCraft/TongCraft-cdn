@@ -1,0 +1,107 @@
+name: Deploy Cloudflare
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '17 20 * * *'
+  workflow_dispatch:
+    inputs:
+      players:
+        description: '要添加的玩家名，多个玩家可用空格、逗号或换行分隔；留空则只刷新已有玩家皮肤'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cloudflare-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: cloudflare
+      url: https://tongcraft-cdn.3159415804.workers.dev/
+    steps:
+      - name: Check Cloudflare configuration
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo '::error::Set the CLOUDFLARE_ACCOUNT_ID repository variable and CLOUDFLARE_API_TOKEN Actions secret before deploying.'
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Restore avatar and skin cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            avatars
+            skins
+          key: ${{ runner.os }}-mojang-assets-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            ${{ runner.os }}-mojang-assets-
+
+      - name: Add players from manual input
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.players != '' }}
+        env:
+          PLAYERS_INPUT: ${{ inputs.players }}
+        run: npm run add-player -- "$PLAYERS_INPUT"
+
+      - name: Fetch player avatars and skins
+        run: npm run fetch
+
+      - name: Build static site
+        run: npm run build
+
+      - name: Check cache behavior and Cloudflare configuration
+        run: |
+          npm test
+          npm run check:types
+          npm run check:network
+          npm run check:deploy
+
+      - name: Install browser for 3D checks
+        run: npx playwright install --with-deps chromium
+
+      - name: Check 3D viewer without external CDNs
+        run: npm run check:3d
+
+      - name: Commit added players and updated metadata
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.players != '' }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: add players from workflow'
+          file_pattern: data/players.json data/avatars-meta.json
+
+      - name: Deploy Cloudflare Worker assets
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Check deployed cache behavior
+        run: npm run check:network
+        env:
+          CHECK_NETWORK_BASE_URL: https://tongcraft-cdn.3159415804.workers.dev
