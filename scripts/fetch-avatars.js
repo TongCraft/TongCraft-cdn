@@ -164,9 +164,10 @@ async function main() {
   const meta = await readJson(metaPath, {});
   const { players } = playersData;
   const args = process.argv.slice(2);
+  const active = players.filter(player => !player.archived);
   const targets = args.length > 0
-    ? players.filter(p => args.includes(p.name))
-    : players;
+    ? active.filter(p => args.includes(p.name))
+    : active;
 
   let ok = 0, fallback = 0, fail = 0;
   for (const player of targets) {

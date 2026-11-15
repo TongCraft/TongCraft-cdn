@@ -16,6 +16,9 @@ playwright-results/
 .wrangler/
 .dev.vars*
 worker-configuration.d.ts
+collector-configuration.d.ts
+.collector-token
+data/player-activity.json
 
 # Claude Code 本地状态
 .claude/

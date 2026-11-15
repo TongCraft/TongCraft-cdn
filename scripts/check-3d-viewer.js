@@ -38,7 +38,7 @@ async function waitForServer(url, timeoutMs = 15000) {
 
 async function readPlayers() {
   const data = JSON.parse(await fs.readFile(path.join(ROOT, 'data', 'players.json'), 'utf-8'));
-  const players = data.players || [];
+  const players = (data.players || []).filter(player => !player.archived);
   const slim = players.find(player => player.skinModel === 'slim');
   const classic = players.find(player => player.skinModel === 'classic');
   return [slim, classic].filter(Boolean).slice(0, 2);

@@ -28,6 +28,8 @@ npm run web
 | 命令 | 用途 |
 | --- | --- |
 | `npm run add-player -- 玩家名` | 将玩家加入 `data/players.json` |
+| `npm run sync:players` | 从采集 Worker 导入已验证的新玩家、改名和活跃记录 |
+| `npm run check:collector` | 检查采集 Worker 类型和部署配置，不上传 |
 | `npm run fetch` | 更新全部玩家的皮肤和头像 |
 | `npm run build` | 导出静态站点到 `dist/`，供 Cloudflare 部署 |
 | `npm run build:pages` | 保留的静态构建命令别名 |
@@ -70,3 +72,15 @@ npm run web
 - `players` 填写玩家名：可用空格、逗号或换行分隔；先添加玩家，再刷新全部图片，检查通过后将玩家数据提交回仓库并部署。
 
 工作流会恢复上一次的 `avatars/`、`skins/` 缓存。Mojang 暂时不可用时可以复用已有图片；如果缺少任意玩家的头像或皮肤，构建会停止，避免发布残缺站点。皮肤内容变化时，页面中的图片哈希地址自动变化，无需手动清理 Cloudflare 长缓存。
+
+## 自动采集玩家
+
+独立 Worker `tongcraft-player-collector` 每 10 分钟查询 `mc.tongcraft.cn` 的公开状态接口，用 SQLite Durable Object 持久保存按 UUID 去重的首次／最近观察时间，不需要修改 Minecraft 服务器。采集不会触发 Git 提交或重建 CDN。每日部署读取观察记录，先向 Mojang 核对新 UUID 和改名，再获取图片并发布；临时验证失败的账号留待下次重试。手动部署会额外尝试采集一次。
+
+现有玩家没有观察记录时标为 `unobserved`，不根据旧登记日期推断离服。本地 `data/player-activity.json` 记录详细活跃情况，Actions 运行摘要只显示数量；超过 `data/player-policy.json` 的 `inactiveAfterDays`（默认 90 天）只标记 `review-inactivity`，仍在网站展示。状态接口可能只返回样本；“最近观察到”不是精确的最后登录时间。空名单、服务器离线和接口失败均不删除历史记录。
+
+确认离服后，将 UUID 加入 `data/player-policy.json` 的 `excludedUuids` 并重新运行部署。玩家资料和已有图片保留，展示名单会隐藏该 UUID，采集也不会重新登记；从排除列表移除后重新部署即可恢复。这个列表只影响皮肤站，不会修改游戏服务器白名单或 Sync 成员资格。
+
+采集 Worker 配置在 `wrangler.collector.jsonc`。部署使用现有 `CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_API_TOKEN`，另需仓库 Secret `PLAYER_COLLECTOR_TOKEN`（随机独立密钥）。工作流将其写入采集 Worker 的 `COLLECTOR_TOKEN` Secret。不要将令牌写入仓库或日志。`GET /health` 只提供采集状态和数量；`GET /observations` 和手动 `POST /collect` 均要求 `Authorization: Bearer <token>`。采集历史不会公开提供。
+
+本地验证：`npm test` 会在模拟 Worker 中验证定时采集、鉴权、故障保留和重启持久化；`npm run check:collector` 校验类型与打包。`npm run sync:players` 从环境变量 `PLAYER_COLLECTOR_TOKEN` 或被忽略的本地 `.collector-token` 读取密钥；`PLAYER_COLLECTOR_URL` 可覆盖默认采集地址。

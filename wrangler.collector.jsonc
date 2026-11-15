@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "tongcraft-player-collector",
+  "main": "collector/worker.ts",
+  "compatibility_date": "2026-11-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "vars": { "SERVER_ADDRESS": "mc.tongcraft.cn" },
+  "secrets": { "required": ["COLLECTOR_TOKEN"] },
+  "triggers": { "crons": ["*/10 * * * *"] },
+  "durable_objects": {
+    "bindings": [{ "name": "OBSERVATIONS", "class_name": "PlayerObservations" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PlayerObservations"] }],
+  "observability": { "enabled": true, "head_sampling_rate": 1 }
+}

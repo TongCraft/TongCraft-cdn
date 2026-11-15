@@ -22,7 +22,9 @@ const RELATED_SITES = [
 const avatarCache = new Map();
 const skinCache = new Map();
 const playersData = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'players.json'), 'utf-8'));
-const players = playersData.players || [];
+const playerPolicy = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'player-policy.json'), 'utf-8'));
+const excludedPlayers = new Set(playerPolicy.excludedUuids.map(uuid => uuid.replace(/-/g, '').toLowerCase()));
+const players = (playersData.players || []).filter(player => !player.archived && !excludedPlayers.has(player.uuid.replace(/-/g, '').toLowerCase()));
 
 const clientBuild = await buildClient();
 const versionedPaths = new Map();

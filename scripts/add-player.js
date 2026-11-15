@@ -75,6 +75,18 @@ async function addPlayer(name, uuid = null) {
     }
   }
   
+  const policy = JSON.parse(await fs.readFile(path.join(DATA_DIR, 'player-policy.json'), 'utf-8'));
+  const normalizedUuid = uuid.replace(/-/g, '').toLowerCase();
+  if (policy.excludedUuids.some(value => value.replace(/-/g, '').toLowerCase() === normalizedUuid)) {
+    console.log(`  Archived player: ${name}; remove the UUID from player-policy.json to restore.`);
+    return false;
+  }
+  if (playersData.players.some(player => player.uuid.replace(/-/g, '').toLowerCase() === normalizedUuid)) {
+    console.log(`  UUID already registered: ${name} (${normalizedUuid})`);
+    return false;
+  }
+  uuid = normalizedUuid;
+
   // Add player
   playersData.players.push({
     name,

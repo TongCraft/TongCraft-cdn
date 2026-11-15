@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "checkJs": false, "allowImportingTsExtensions": true, "types": ["node"] },
+  "include": ["collector/**/*.ts", "collector-configuration.d.ts"]
+}
