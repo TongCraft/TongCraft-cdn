@@ -71,8 +71,10 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           PLAYER_COLLECTOR_TOKEN: ${{ secrets.PLAYER_COLLECTOR_TOKEN }}
         run: |
-          npm run deploy:collector
-          printf '%s' "$PLAYER_COLLECTOR_TOKEN" | npx wrangler secret put COLLECTOR_TOKEN --config wrangler.collector.jsonc
+          collector_secrets="$(mktemp "$RUNNER_TEMP/tongcraft-collector-secrets.XXXXXX")"
+          trap 'rm -f "$collector_secrets"' EXIT
+          COLLECTOR_SECRETS_FILE="$collector_secrets" node -e 'require("node:fs").writeFileSync(process.env.COLLECTOR_SECRETS_FILE, JSON.stringify({ COLLECTOR_TOKEN: process.env.PLAYER_COLLECTOR_TOKEN }), { mode: 0o600 })'
+          npm run deploy:collector -- --secrets-file "$collector_secrets"
 
       - name: Import automatically observed players
         env:
